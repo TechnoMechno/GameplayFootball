@@ -1,9 +1,7 @@
 ## Gameplay Football
-Football game, a fork of discontinued [GameplayFootball](https://github.com/BazkieBumpercar/GameplayFootball) written by [Bastiaan Konings Schuiling](http://www.properlydecent.com/).
+Personal fork of [vi3itor/GameplayFootball](https://github.com/vi3itor/GameplayFootball), itself a fork of the discontinued [GameplayFootball](https://github.com/BazkieBumpercar/GameplayFootball) written by [Bastiaan Konings Schuiling](http://www.properlydecent.com/).
 
-In 2019, Google Brain team picked up a game and created a Reinforcement Learning environment based on it - [Google Research Football](https://github.com/google-research/football). They made some improvements to the game, updated the libraries, but threw away everything (e.g. menus, audio effects, etc.) that was not necessary for their task.
-
-The goal of this repository is to update the existing code, based on Google Brain's changes (see `google_brain` branch) and other forks, and make it compiling and running on as many platforms as possible. PRs are always welcome.  
+This fork is used to experiment with different player control schemes for the football game — tweaking input handling, testing alternative control mappings, and exploring how different schemes affect gameplay feel.
 
 ## Building from source
 
@@ -18,7 +16,7 @@ libdirectfb-dev libst-dev mesa-utils xvfb x11vnc libsqlite3-dev
 Run the following commands:
 ```bash
 # Clone the repository
-git clone https://github.com/vi3itor/GameplayFootball.git
+git clone https://github.com/TechnoMechno/GameplayFootball.git
 cd GameplayFootball
 
 # Copy the contents of `data` directory into `build`
@@ -51,7 +49,7 @@ brew install git cmake sdl2 sdl2_image sdl2_ttf sdl2_gfx boost openal-soft
 # Navigate to the directory where you want to put the repository
 cd ~
 # Clone the repository
-git clone https://github.com/vi3itor/GameplayFootball.git
+git clone https://github.com/TechnoMechno/GameplayFootball.git
 cd GameplayFootball
 # Copy the contents of `data` directory into `build`
 cp -R data/. build
@@ -98,7 +96,7 @@ Install required dependencies (all triplets **must be `x86-windows`**):
 cd C:\dev
 
 % Clone repository
-git clone https://github.com/vi3itor/GameplayFootball.git 
+git clone https://github.com/TechnoMechno/GameplayFootball.git 
 cd GameplayFootball
 
 % Switch to windows branch
@@ -128,8 +126,4 @@ That's it! Run `gameplayfootball.exe` inside `build\Release` directory (or insid
 
 
 ## Problems? 
-If you have any problems please open an issue. 
-
-
-### Donate
-If you want to thank Bastiaan for his great work, consider a donation to his Bitcoin address 1JHnTe2QQj8RL281fXFiyvK9igj2VhPh2t
+If you have any problems please open an issue.
