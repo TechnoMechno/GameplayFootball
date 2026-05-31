@@ -114,6 +114,7 @@ MainMenuPage::MainMenuPage(Gui2WindowManager *windowManager, const Gui2PageData 
 
   buttons.at(0)->sig_OnClick.connect(boost::bind(&MainMenuPage::GoControllerSelect, this));
   buttons.at(2)->sig_OnClick.connect(boost::bind(&MainMenuPage::GoLeague, this));
+  buttons.at(3)->sig_OnClick.connect(boost::bind(&MainMenuPage::GoTest, this));
   buttons.at(4)->sig_OnClick.connect(boost::bind(&MainMenuPage::GoSettings, this));
   buttons.at(5)->sig_OnClick.connect(boost::bind(&MainMenuPage::GoCredits, this));
   if (!IsReleaseVersion()) {
@@ -127,7 +128,6 @@ MainMenuPage::MainMenuPage(Gui2WindowManager *windowManager, const Gui2PageData 
 
   buttons.at(1)->SetActive(false);
   buttons.at(2)->SetActive(false);
-  buttons.at(3)->SetActive(false);
 
   grid = new Gui2Grid(windowManager, "grid_main", 29.25, 52, 41.5, 40);
 
@@ -153,18 +153,61 @@ MainMenuPage::MainMenuPage(Gui2WindowManager *windowManager, const Gui2PageData 
 MainMenuPage::~MainMenuPage() {
 }
 
+// Navigates to controller assignment screen (pre-match setup step 1).
+// selectedButtonID controls which button receives focus when MainMenuPage is reconstructed.
 void MainMenuPage::GoControllerSelect() {
 
+  // Deactivate this page's widgets and unregister from the window manager.
   this->Exit();
 
+  // Set button 0 ("Match") as the focused button when the main menu is recreated on back-navigation.
   pageData.properties->Set("selectedButtonID", 0);
+
+  // Build the property bag that will be passed to the new page.
   Properties properties;
+
+  // Tell the controller-select page we're in the pre-match flow, not pausing mid-game.
   properties.SetBool("isInGame", false);
+
+  // Instantiate and push the controller-select page onto the navigation stack.
   windowManager->GetPageFactory()->CreatePage((int)e_PageID_ControllerSelect, properties, 0);
+
+  // This page is no longer needed; destroy it now that the new page owns the screen.
+  delete this;
+}
+
+void MainMenuPage::GoTest() {
+  this->Exit();
+
+  // Wire controllers: first controller (keyboard) plays team 1; others are CPU.
+  std::vector<SideSelection> sides;
+  const std::vector<IHIDevice*> &controllers = GetControllers();
+  for (unsigned int i = 0; i < controllers.size(); i++) {
+    SideSelection side;
+    side.controllerID = i;
+    side.controllerImage = nullptr;
+    // Mirror QuickStart() logic: single controller or second controller → side -1 (team 1 human)
+    if ((controllers.size() > 1 && i == 1) || (controllers.size() == 1 && i == 0)) {
+      side.side = -1;
+    } else {
+      side.side = 0;
+    }
+    sides.push_back(side);
+  }
+  GetMenuTask()->SetControllerSetup(sides);
+
+  // Barcelona (3) vs Real Madrid (8) — same defaults as QuickStart().
+  GetMenuTask()->SetTeamIDs("3", "8");
+
+  Properties properties;
+  windowManager->GetPageFactory()->CreatePage((int)e_PageID_LoadingMatch, properties, 0);
 
   delete this;
 }
 
+
+// Navigates to the league start page.
+// selectedButtonID=2 ensures "League" is focused when returning to main menu.
 void MainMenuPage::GoLeague() {
 
   this->Exit();
@@ -176,6 +219,8 @@ void MainMenuPage::GoLeague() {
   delete this;
 }
 
+// Navigates to the settings page.
+// selectedButtonID=4 ensures "Settings" is focused when returning to main menu.
 void MainMenuPage::GoSettings() {
 
   this->Exit();
@@ -187,6 +232,8 @@ void MainMenuPage::GoSettings() {
   delete this;
 }
 
+// Navigates to the credits page.
+// selectedButtonID=5 ensures "Credits" is focused when returning to main menu.
 void MainMenuPage::GoCredits() {
   this->Exit();
 
@@ -197,6 +244,7 @@ void MainMenuPage::GoCredits() {
   delete this;
 }
 
+// Navigates to the outro/exit screen (release builds only; non-release quits directly).
 void MainMenuPage::GoOutro() {
   this->Exit();
 

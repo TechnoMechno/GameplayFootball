@@ -94,20 +94,22 @@ class OutroPage : public Gui2Page {
 
 };
 
+// The main menu screen. Each Go___() method is a button callback: it destroys
+// this page and creates the next one. This is the navigation pattern used
+// throughout the menu system — pages are not stacked, they replace each other.
 class MainMenuPage : public Gui2Page {
 
   public:
     MainMenuPage(Gui2WindowManager *windowManager, const Gui2PageData &pageData);
     virtual ~MainMenuPage();
 
-    void GoControllerSelect();
-    void GoLeague();
-    void GoSettings();
-    void GoCredits();
-    void GoOutro();
-    bool GoImportDB();
-    //XX void Import_AgeValueStatsAdd(int age, int value);
-    //XX void Import_ProcessAgeValueStats();
+    void GoControllerSelect(); // "Match" button — leads to controller/team/options setup
+    void GoLeague();           // "League" button — leads to league start page
+    void GoSettings();         // "Settings" button
+    void GoCredits();          // "Credits" button
+    void GoOutro();            // "Exit" button (release builds — shows outro screen)
+    bool GoImportDB();         // "Import FM" button (non-release only — imports Football Manager data)
+    void GoTest();            // "Test" button — for testing new features during development, no implementation behind it yet
 
     virtual void ProcessWindowingEvent(WindowingEvent *event);
 
@@ -116,6 +118,7 @@ class MainMenuPage : public Gui2Page {
 
     std::vector<Gui2Button*> buttons;
 
+    // Used only during GoImportDB() to distribute player stats across age buckets.
     std::map < int, std::vector<int> > ageValues;
     std::map < int, float > averageStatPerAge;
 
