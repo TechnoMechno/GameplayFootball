@@ -35,8 +35,7 @@ Run the game:
 ./gameplayfootball
 ```
 
-### MacOS (Work in Progress)
-**Important**: Currently, the game can be compiled on Mac OS, but it is not running yet, because rendering must be done on the Main Thread.
+### MacOS
 
 To install required dependencies you need [`brew`](https://brew.sh/) which can be installed in Terminal by running:
 ```bash
@@ -61,7 +60,7 @@ cmake ..
 # Compile the game
 make -j$(nproc)
 
-# Run the game (Currently is not working)
+# Run the game
 ./gameplayfootball
 ```
 
