@@ -18,6 +18,8 @@
 
 using namespace blunted;
 
+// Shown at game startup. Displays a full-screen background image.
+// Any key press or confirm input advances to the main menu.
 IntroPage::IntroPage(Gui2WindowManager *windowManager, const Gui2PageData &pageData) : Gui2Page(windowManager, pageData) {
 
   windowManager->BlackoutBackground(true);
@@ -52,6 +54,8 @@ void IntroPage::ProcessKeyboardEvent(KeyboardEvent *event) {
 }
 
 
+// Shown when the player exits in release builds (dev builds quit immediately).
+// Any input triggers QuitGame().
 OutroPage::OutroPage(Gui2WindowManager *windowManager, const Gui2PageData &pageData) : Gui2Page(windowManager, pageData) {
 
   windowManager->BlackoutBackground(true);
@@ -85,6 +89,11 @@ void OutroPage::ProcessKeyboardEvent(KeyboardEvent *event) {
 }
 
 
+// Top-level menu. Builds a 2-column grid of buttons and wires each to a
+// navigation method. Cup, League, and Test buttons are currently disabled
+// (grayed out — no implementation behind them yet). In dev builds an extra
+// "Import FM" button is appended. pageData.properties["selectedButtonID"]
+// restores focus to the last-used button when returning from a sub-page.
 MainMenuPage::MainMenuPage(Gui2WindowManager *windowManager, const Gui2PageData &pageData) : Gui2Page(windowManager, pageData) {
   Gui2Image *title = new Gui2Image(windowManager, "image_main_title", 28, 32, 44, 20);
   title->LoadImage("media/menu/main/title01.png");
@@ -95,7 +104,7 @@ MainMenuPage::MainMenuPage(Gui2WindowManager *windowManager, const Gui2PageData 
   buttons.push_back(new Gui2Button(windowManager, "button_main_start", 0, 0, 20, 3, "Match"));
   buttons.push_back(new Gui2Button(windowManager, "button_main_cup", 0, 0, 20, 3, "Cup"));
   buttons.push_back(new Gui2Button(windowManager, "button_main_league", 0, 0, 20, 3, "League"));
-  buttons.push_back(new Gui2Button(windowManager, "button_main_edit", 0, 0, 20, 3, "Editor"));
+  buttons.push_back(new Gui2Button(windowManager, "button_main_test", 0, 0, 20, 3, "Test"));
   buttons.push_back(new Gui2Button(windowManager, "button_main_settings", 0, 0, 20, 3, "Settings"));
   buttons.push_back(new Gui2Button(windowManager, "button_main_credits", 0, 0, 20, 3, "Credits"));
   buttons.push_back(new Gui2Button(windowManager, "button_main_quit", 0, 0, 20, 3, "Exit"));
@@ -197,11 +206,14 @@ void MainMenuPage::GoOutro() {
   delete this;
 }
 
+// Sort predicate: ascending by averageStat (used to rank players within a club).
 bool SortClubPlayersByAverageStat(const PlayerImport &a, const PlayerImport &b) {
   if (a.averageStat < b.averageStat) return true; else return false;
   return false;
 }
 
+// Sort predicate: ascending by (offensivepositioning - defensivepositioning),
+// so defenders sort before midfielders before attackers.
 bool SortClubPlayersByRole(const PlayerImport &a, const PlayerImport &b) {
   float aDef = 0;
   float aAtt = 0;
@@ -226,6 +238,9 @@ bool SortClubPlayersByRole(const PlayerImport &a, const PlayerImport &b) {
   return false;
 }
 
+// Looks up a league's display or file name from the names database.
+// srcfield is "faketargetname" (display) or "targetname" (filename).
+// Falls back to the original name if no mapping exists.
 std::string RenameLeague(Database *namedb, const std::string &name, const std::string &srcfield) {
   std::string query = "select " + srcfield + " from leaguenames where name = \"" + name + "\" limit 1;";
   DatabaseResult *result = namedb->Query(query);
@@ -237,6 +252,7 @@ std::string RenameLeague(Database *namedb, const std::string &name, const std::s
   return targetName;
 }
 
+// Same as RenameLeague but for club names (queries the clubnames table).
 std::string RenameClub(Database *namedb, const std::string &name, const std::string &srcfield) {
   std::string query = "select " + srcfield + " from clubnames where name = \"" + name + "\" limit 1;";
   DatabaseResult *result = namedb->Query(query);
@@ -248,6 +264,8 @@ std::string RenameClub(Database *namedb, const std::string &name, const std::str
   return targetName;
 }
 
+// Fetches formation XML, tactics XML, short name, and kit colors for a club
+// from the names database. Returns sensible defaults if no entry exists.
 ClubData GetClubData(Database *namedb, const std::string &name) {
   std::string query = "select formation_xml, tactics_xml, shortname, color1, color2 from clubnames where name = \"" + name + "\" limit 1;";
   DatabaseResult *result = namedb->Query(query);
@@ -271,6 +289,10 @@ ClubData GetClubData(Database *namedb, const std::string &name) {
   return data;
 }
 
+// Looks up appearance and formation data for a player by real name.
+// Fills fake display name, skin color, hair, height, weight, formation slot,
+// stat offset, and optional custom profile XML. Applies random defaults for
+// any fields not found in the names database.
 void GetPlayerData(Database *namedb, const std::string &firstname, const std::string &lastname, std::string &fakefirstname_ret, std::string &fakelastname_ret, int &skincolor_ret, std::string &hairstyle_ret, std::string &haircolor_ret, float &height_ret, float &weight_ret, signed int &formationorder_ret, float &baseStatOffset_ret, std::string &customProfile_ret) {
 
   skincolor_ret = 0;
@@ -310,8 +332,10 @@ void GetPlayerData(Database *namedb, const std::string &firstname, const std::st
 }
 
 
-/* THIS CODE IMPORTS FM DATABASES, exported with some FM management tool, of which I forgot the name. maybe it's useful for somebody. */
-
+// Imports a Football Manager CSV export (fm15_clubs.csv + fm15_players.csv) into
+// the game's SQLite database. Drops and recreates all tables, then populates
+// regions, countries, leagues, teams, and players. Only available in dev builds.
+// Hardcoded to a small set of top clubs for the public beta.
 bool MainMenuPage::GoImportDB() {
 
   Database *namedb = new Database();
